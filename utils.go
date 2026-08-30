@@ -233,6 +233,7 @@ func NewTalosAPIServerConfig(image, tag string, endpoint *url.URL) *v1alpha1.API
 		ContainerImage: newImage(image, tag),
 		CertSANs:       []string{endpoint.Hostname()},
 		ExtraArgsConfig: v1alpha1.Args{
+			// TODO(Kendall): this is probably broken still idiot
 			"feature-gates": v1alpha1.NewArgValue("UserNamespacesSupport=true,UserNamespacesPodSecurityStandards=true", []string{}),
 		},
 		// Apparently, we need this: https://kubernetes.io/docs/tasks/configure-pod-container/enforce-standards-admission-controller/
