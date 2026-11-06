@@ -24,6 +24,7 @@ import (
 	"net/url"
 
 	"github.com/siderolabs/crypto/x509"
+	"github.com/siderolabs/talos/pkg/machinery/config/types/meta"
 	"github.com/siderolabs/talos/pkg/machinery/config/types/v1alpha1"
 )
 
@@ -231,16 +232,15 @@ func NewTalosAPIServerConfig(image, tag string, endpoint *url.URL) *v1alpha1.API
 	t := true
 	return &v1alpha1.APIServerConfig{
 		ContainerImage: newImage(image, tag),
-		CertSANs:       []string{endpoint.Hostname()},
-		ExtraArgsConfig: v1alpha1.Args{
+		ExtraCertSANs:  []string{endpoint.Hostname()},
+		ExtraArgsConfig: meta.Args{
 			// TODO(Kendall): this is probably broken still idiot
-			"feature-gates": v1alpha1.NewArgValue("UserNamespacesSupport=true,UserNamespacesPodSecurityStandards=true", []string{}),
+			"feature-gates": meta.NewArgValue("UserNamespacesSupport=true,UserNamespacesPodSecurityStandards=true", []string{}),
 		},
-		// Apparently, we need this: https://kubernetes.io/docs/tasks/configure-pod-container/enforce-standards-admission-controller/
 		AdmissionControlConfig: v1alpha1.AdmissionPluginConfigList{
 			&v1alpha1.AdmissionPluginConfig{
 				PluginName: "PodSecurity",
-				PluginConfiguration: v1alpha1.Unstructured{
+				PluginConfiguration: meta.Unstructured{
 					Object: map[string]any{
 						"apiVersion": "pod-security.admission.config.k8s.io/v1alpha1",
 						"kind":       "PodSecurityConfiguration",
@@ -264,7 +264,7 @@ func NewTalosAPIServerConfig(image, tag string, endpoint *url.URL) *v1alpha1.API
 		// We definitely want to disable PSP, its been removed for a long while iirc.
 		DisablePodSecurityPolicyConfig: &t,
 		// Maybe we don't need this?
-		AuditPolicyConfig: v1alpha1.Unstructured{},
+		AuditPolicyConfig: meta.Unstructured{},
 	}
 }
 
@@ -296,7 +296,7 @@ func NewTalosEtcdConfig(image, tag string, rootCa *x509.PEMEncodedCertificateAnd
 func NewTalosKubeletConfig(image, tag string) *v1alpha1.KubeletConfig {
 	return &v1alpha1.KubeletConfig{
 		KubeletImage: newImage(image, tag),
-		KubeletExtraConfig: v1alpha1.Unstructured{
+		KubeletExtraConfig: meta.Unstructured{
 			Object: map[string]any{
 				"featureGates": map[string]any{
 					"UserNamespacesSupport":              true,
